@@ -1,0 +1,41 @@
+# Sobe o PostgreSQL e a API. Por padrão no perfil "demo": produtos de exemplo e 45 dias de pedidos simulados.
+# Uso: docker compose up --build   ->   http://localhost:8080 (Swagger)
+name: margem
+
+services:
+  banco:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: margem
+      POSTGRES_USER: margem
+      POSTGRES_PASSWORD: ${DB_SENHA:-margem}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U margem -d margem"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      banco:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-demo}
+      DB_URL: jdbc:postgresql://banco:5432/margem
+      DB_USUARIO: margem
+      DB_SENHA: ${DB_SENHA:-margem}
+      MARGEM_JWT_SEGREDO: ${MARGEM_JWT_SEGREDO:-segredo-local-de-desenvolvimento-troque-em-producao}
+      MARGEM_ALERTAS_HABILITADOS: ${MARGEM_ALERTAS_HABILITADOS:-false}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SHOPEE_MODO: ${SHOPEE_MODO:-simulada}
+
+volumes:
+  dados:

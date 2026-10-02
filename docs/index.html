@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Envie a planilha de pedidos da Shopee e veja o lucro real de cada venda.">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Margem Lucro Real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: caixa da loja. Barra do topo com a planilha, abas grandes e, no meio, os números como um comprovante. */
+:root {
+  --papel: #F4F6FA;
+  --folha: #FFFFFF;
+  --tinta: #152036;
+  --tinta-suave: #56627A;
+  --linha: #DCE2EC;
+  --caneta: #2748A8;
+  --caneta-fundo: #E6ECFA;
+  --lucro: #12785A;
+  --lucro-fundo: #E3F4EC;
+  --prejuizo: #B42318;
+  --prejuizo-fundo: #FCE9E7;
+  --atencao: #9A5A06;
+  --atencao-fundo: #FDF1DC;
+  --shopee-cor: #D9622B;
+  --produto-cor: #6C7A96;
+  --imposto-cor: #A58BD6;
+  --outros-cor: #C9B26B;
+  --sombra: 0 1px 2px rgba(21, 32, 54, .06), 0 4px 16px rgba(21, 32, 54, .05);
+  --f-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-numero: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #0E1421; --folha: #161F31; --tinta: #E7ECF4; --tinta-suave: #9AA7BD; --linha: #27334B;
+    --caneta: #8FA8FF; --caneta-fundo: #1E2A48; --lucro: #43CC94; --lucro-fundo: #13332A;
+    --prejuizo: #FF8173; --prejuizo-fundo: #3A1D1D; --atencao: #F3B550; --atencao-fundo: #3A2C12;
+    --shopee-cor: #F07A43; --produto-cor: #8D9BB8; --imposto-cor: #B9A2EA; --outros-cor: #D8C27A;
+    --sombra: 0 1px 2px rgba(0, 0, 0, .3); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papel: #0E1421; --folha: #161F31; --tinta: #E7ECF4; --tinta-suave: #9AA7BD; --linha: #27334B;
+  --caneta: #8FA8FF; --caneta-fundo: #1E2A48; --lucro: #43CC94; --lucro-fundo: #13332A;
+  --prejuizo: #FF8173; --prejuizo-fundo: #3A1D1D; --atencao: #F3B550; --atencao-fundo: #3A2C12;
+  --shopee-cor: #F07A43; --produto-cor: #8D9BB8; --imposto-cor: #B9A2EA; --outros-cor: #D8C27A;
+  --sombra: 0 1px 2px rgba(0, 0, 0, .3); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--papel); color: var(--tinta); font-family: var(--f-texto); font-size: 17px; line-height: 1.5; }
+.pagina { max-width: 1060px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 56px; display: grid; gap: 20px; }
+.pagina > *, #conteudo > *, .grade-2 > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--f-titulo); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--caneta); outline-offset: 2px; border-radius: 6px; }
+.num { font-family: var(--f-numero); font-variant-numeric: tabular-nums; }
+.suave { color: var(--tinta-suave); }
+.pequeno { font-size: 14px; }
+
+/* Topo */
+.topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.selo { width: 44px; height: 44px; border-radius: 12px; background: var(--caneta); display: grid; place-items: center; flex: none; }
+.selo svg { width: 26px; height: 26px; }
+.marca h1 { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+.marca p { color: var(--tinta-suave); font-size: 15px; }
+.botao { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 700; background: var(--caneta); color: var(--folha); min-height: 48px; }
+.botao:hover { filter: brightness(1.08); }
+.botao.secundario { background: var(--folha); color: var(--tinta); border: 1.5px solid var(--linha); }
+.botao.perigo { background: var(--prejuizo); color: var(--folha); }
+.botao.pequeno { min-height: 38px; padding: 8px 14px; font-size: 15px; }
+
+/* Faixa de status da planilha */
+.aviso { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; background: var(--folha); border: 1.5px solid var(--linha); border-radius: 16px; padding: 16px 20px; }
+.aviso.exemplo { border-color: var(--atencao); background: var(--atencao-fundo); }
+.aviso .texto { min-width: 0; flex: 1 1 360px; }
+.aviso strong { display: block; font-size: 17px; }
+.soltar { outline: 3px dashed var(--caneta); outline-offset: -8px; }
+
+details.como { font-size: 15px; }
+details.como summary { cursor: pointer; color: var(--caneta); font-weight: 700; }
+details.como ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+
+/* Períodos e abas */
+.barra { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.abas { display: flex; flex-wrap: wrap; gap: 6px; background: var(--folha); border: 1.5px solid var(--linha); border-radius: 14px; padding: 5px; }
+.aba { border: 0; background: transparent; padding: 9px 16px; border-radius: 10px; font-weight: 700; color: var(--tinta-suave); min-height: 42px; }
+.aba[aria-selected="true"] { background: var(--caneta-fundo); color: var(--caneta); }
+.periodo { display: flex; align-items: center; gap: 8px; }
+.periodo select { border: 1.5px solid var(--linha); background: var(--folha); border-radius: 10px; padding: 9px 12px; min-height: 44px; }
+
+.cartao { background: var(--folha); border: 1.5px solid var(--linha); border-radius: 18px; padding: 22px; box-shadow: var(--sombra); min-width: 0; }
+.cartao h2 { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.cartao > * + * { margin-top: 14px; }
+.grade-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+/* Resumo */
+.frase { font-family: var(--f-titulo); font-weight: 600; font-size: clamp(24px, 3.6vw, 36px); line-height: 1.2; letter-spacing: -.015em; text-wrap: balance; }
+.frase b { font-weight: 800; }
+.frase .num { font-family: inherit; font-variant-numeric: tabular-nums; }
+.frase .ganho { color: var(--lucro); }
+.frase .perda { color: var(--prejuizo); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 11px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.chip.bom { background: var(--lucro-fundo); color: var(--lucro); }
+.chip.ruim { background: var(--prejuizo-fundo); color: var(--prejuizo); }
+.chip.atencao { background: var(--atencao-fundo); color: var(--atencao); }
+.chip.neutro { background: var(--caneta-fundo); color: var(--caneta); }
+
+.barra100 { display: flex; height: 26px; border-radius: 8px; overflow: hidden; background: var(--linha); }
+.barra100 span { display: block; height: 100%; min-width: 2px; }
+.legenda { display: grid; gap: 2px; margin-top: 16px; }
+.legenda .l { display: grid; grid-template-columns: 14px 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--linha); }
+.legenda .l:last-child { border-bottom: 0; }
+.legenda i { width: 14px; height: 14px; border-radius: 4px; display: block; }
+.legenda .v { text-align: right; min-width: 92px; }
+.legenda .c100 { text-align: right; min-width: 82px; color: var(--tinta-suave); }
+.legenda .cab { font-size: 13px; color: var(--tinta-suave); padding: 0 0 4px; border-bottom: 1.5px solid var(--linha); }
+.legenda .cab span { font-family: var(--f-texto); }
+
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.numero { border: 1.5px solid var(--linha); border-radius: 14px; padding: 12px 14px; background: var(--papel); }
+.numero small { display: block; color: var(--tinta-suave); font-size: 14px; }
+.numero b { font-family: var(--f-numero); font-size: 21px; font-weight: 600; }
+
+.lista-atencao { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.lista-atencao li { display: grid; grid-template-columns: 6px 1fr; gap: 14px; background: var(--papel); border-radius: 12px; padding: 12px 14px 12px 0; overflow: hidden; }
+.lista-atencao li::before { content: ""; border-radius: 0 4px 4px 0; background: var(--cor, var(--atencao)); }
+.lista-atencao li.ruim { --cor: var(--prejuizo); }
+.lista-atencao li.bom { --cor: var(--lucro); }
+.lista-atencao .acao { margin-top: 6px; }
+.link { border: 0; background: none; padding: 0; color: var(--caneta); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Produtos */
+.tabela-envelope { overflow-x: auto; margin-inline: -8px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; }
+th { text-align: left; font-size: 14px; color: var(--tinta-suave); font-weight: 700; padding: 8px; border-bottom: 1.5px solid var(--linha); white-space: nowrap; }
+td { padding: 12px 8px; border-bottom: 1px solid var(--linha); vertical-align: middle; }
+td.dir, th.dir { text-align: right; }
+.produto-nome { font-weight: 700; }
+.sku { font-family: var(--f-numero); font-size: 12.5px; color: var(--tinta-suave); word-break: break-all; }
+.campo-custo { display: flex; align-items: center; gap: 6px; border: 1.5px solid var(--linha); border-radius: 10px; padding: 0 10px; background: var(--papel); width: 138px; }
+.campo-custo.falta { border-color: var(--atencao); background: var(--atencao-fundo); }
+.campo-custo span { color: var(--tinta-suave); font-size: 14px; }
+.campo-custo input { border: 0; background: transparent; width: 100%; padding: 9px 0; font-family: var(--f-numero); text-align: right; outline: none; }
+.negativo { color: var(--prejuizo); }
+.positivo { color: var(--lucro); }
+.ordenar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ordenar select { border: 1.5px solid var(--linha); background: var(--folha); border-radius: 10px; padding: 8px 10px; }
+
+/* Pedidos */
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; }
+.filtro { border: 1.5px solid var(--linha); background: var(--folha); border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: 15px; }
+.filtro[aria-pressed="true"] { border-color: var(--caneta); background: var(--caneta-fundo); color: var(--caneta); }
+.pedidos { display: grid; gap: 8px; }
+.pedido { border: 1.5px solid var(--linha); border-radius: 14px; background: var(--folha); }
+.pedido summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 12px 16px; align-items: center; }
+.pedido summary::-webkit-details-marker { display: none; }
+.pedido .quem { min-width: 0; }
+.pedido .quem b { font-family: var(--f-numero); font-size: 15px; }
+.pedido .itens-txt { color: var(--tinta-suave); font-size: 15px; overflow-wrap: anywhere; }
+.pedido .valores { text-align: right; }
+.pedido[open] { border-color: var(--caneta); }
+
+/* Comprovante: a conta aberta */
+.comprovante { font-family: var(--f-numero); font-size: 15px; background: var(--papel); border-radius: 12px; padding: 16px 18px; margin: 0 16px 16px; display: grid; gap: 2px; }
+.comprovante .r { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.comprovante .r span:first-child { min-width: 0; }
+.comprovante .sep { border-top: 1.5px dashed var(--linha); margin: 6px 0; }
+.comprovante .total { font-weight: 600; font-size: 17px; }
+.comprovante .nota { font-family: var(--f-texto); font-size: 14px; color: var(--tinta-suave); padding-top: 6px; }
+.simulador .comprovante { margin: 0; }
+
+/* Formulários */
+.campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+label.campo { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
+label.campo small { font-weight: 400; color: var(--tinta-suave); }
+.entrada { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--linha); border-radius: 12px; padding: 0 12px; background: var(--papel); min-height: 48px; }
+.entrada span { color: var(--tinta-suave); }
+.entrada input { border: 0; background: transparent; width: 100%; padding: 10px 0; font-family: var(--f-numero); font-size: 18px; outline: none; min-width: 0; }
+.checar { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; }
+.checar input { width: 22px; height: 22px; margin-top: 2px; flex: none; }
+.resposta { font-family: var(--f-titulo); font-size: 26px; font-weight: 800; }
+textarea { width: 100%; min-height: 90px; border: 1.5px solid var(--linha); border-radius: 12px; background: var(--papel); padding: 10px 12px; font-family: var(--f-numero); font-size: 13px; }
+.acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+.tabela-taxas td, .tabela-taxas th { padding: 8px; }
+.tabela-taxas table { min-width: 0; }
+
+.mapear { border-color: var(--atencao); }
+.mapear .campos label select { border: 1.5px solid var(--linha); border-radius: 10px; padding: 9px 10px; background: var(--papel); font-weight: 400; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--tinta); color: var(--papel); padding: 12px 18px; border-radius: 12px; font-weight: 700; max-width: calc(100% - 32px); box-shadow: var(--sombra); z-index: 5; }
+.vazio { text-align: center; padding: 28px 12px; color: var(--tinta-suave); }
+.rodape { font-size: 14px; color: var(--tinta-suave); text-align: center; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .pagina { padding-inline: 16px; }
+  .cartao { padding: 18px 16px; }
+  .abas { width: 100%; }
+  .aba { flex: 1 1 auto; padding: 9px 10px; }
+  .comprovante { margin: 0 10px 12px; padding: 14px; font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="pagina" id="app">
+  <header class="topo">
+    <div class="marca">
+      <div class="selo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 18V6m0 12h16M8 14l3.5-4 3 2.5L20 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h1>Margem</h1>
+        <p>Quanto sobra de verdade das suas vendas na Shopee</p>
+      </div>
+    </div>
+    <button class="botao" type="button" data-enviar>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Enviar planilha
+    </button>
+    <input type="file" id="arquivo" accept=".xlsx,.xls,.csv" hidden>
+  </header>
+
+  <section class="aviso" id="aviso"></section>
+
+  <section class="cartao mapear" id="mapear" hidden></section>
+
+  <nav class="barra" aria-label="Seções">
+    <div class="abas" role="tablist" id="abas">
+      <button class="aba" role="tab" data-aba="resumo" aria-selected="true">Resumo</button>
+      <button class="aba" role="tab" data-aba="produtos" aria-selected="false">Produtos</button>
+      <button class="aba" role="tab" data-aba="pedidos" aria-selected="false">Pedidos</button>
+      <button class="aba" role="tab" data-aba="simulador" aria-selected="false">Simulador</button>
+      <button class="aba" role="tab" data-aba="ajustes" aria-selected="false">Ajustes</button>
+    </div>
+    <label class="periodo" id="periodo-envelope"><span class="suave pequeno">Período</span>
+      <select id="periodo"></select>
+    </label>
+  </nav>
+
+  <main id="conteudo"></main>
+
+  <p class="rodape">A planilha é lida aqui mesmo, no seu navegador. Nome, telefone e endereço dos clientes não são lidos nem guardados.</p>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* Regras de negócio do Margem (mesmas do backend Java), em centavos para não errar arredondamento. */
+const Margem = (() => {
+  const TABELA_2026 = [
+    { min: 0, pct: 50, fixa: 0 },
+    { min: 800, pct: 20, fixa: 400 },
+    { min: 8000, pct: 14, fixa: 1600 },
+    { min: 10000, pct: 14, fixa: 2000 },
+    { min: 20000, pct: 14, fixa: 2600 },
+  ];
+  const CONFIG_PADRAO = { embalagem: 150, aliquota: 4, adicional: 0, tabela: TABELA_2026 };
+
+  /** Arredonda meio centavo para longe do zero (HALF_UP, igual ao BigDecimal do backend). */
+  function arred(x) {
+    const s = x < 0 ? -1 : 1;
+    return s * Math.round(Math.abs(x) + 1e-7);
+  }
+  const pctDe = (cents, pct) => arred((cents * pct) / 100);
+
+  function faixaPara(tabela, preco) {
+    let f = tabela[0];
+    for (const t of tabela) if (preco >= t.min) f = t;
+    return f;
+  }
+  function limiteSuperior(tabela, faixa) {
+    const i = tabela.indexOf(faixa);
+    return i >= 0 && i < tabela.length - 1 ? tabela[i + 1].min : null;
+  }
+  function taxasPara(cfg, preco, qtd) {
+    const f = faixaPara(cfg.tabela, preco);
+    return { comissao: pctDe(preco * qtd, f.pct), servico: (f.fixa + cfg.adicional) * qtd, transacao: 0 };
+  }
+  const totalTaxas = (t) => t.comissao + t.servico + t.transacao;
+
+  /** Divide um valor entre itens proporcionalmente; o centavo que sobra vai para o último. */
+  function rateio(total, pesos) {
+    if (!pesos.length) return [];
+    const soma = pesos.reduce((a, b) => a + b, 0);
+    if (soma === 0) return rateio(total, pesos.map(() => 1));
+    const partes = [];
+    let distribuido = 0;
+    for (let i = 0; i < pesos.length - 1; i++) {
+      const p = arred((total * pesos[i]) / soma);
+      partes.push(p);
+      distribuido += p;
+    }
+    partes.push(total - distribuido);
+    return partes;
+  }
+
+  /** Conta aberta de um pedido. custos: { SKU: centavos }. */
+  function lucroPedido(pedido, custos, cfg) {
+    const itens = pedido.itens;
+    const bruto = itens.reduce((a, i) => a + i.preco * i.qtd, 0);
+    const cupom = pedido.cupom || 0;
+    let taxas = pedido.taxas;
+    const estimadas = !taxas;
+    if (!taxas) {
+      taxas = itens.map((i) => taxasPara(cfg, i.preco, i.qtd))
+        .reduce((a, t) => ({ comissao: a.comissao + t.comissao, servico: a.servico + t.servico, transacao: 0 }),
+          { comissao: 0, servico: 0, transacao: 0 });
+    }
+    const tTaxas = totalTaxas(taxas);
+    const recebido = bruto - cupom - tTaxas;
+    const base = Math.max(bruto - cupom, 0);
+    const impostos = pctDe(base, cfg.aliquota);
+    const embalagem = cfg.embalagem;
+    const pesos = itens.map((i) => i.preco * i.qtd);
+    const rCupom = rateio(cupom, pesos), rTaxas = rateio(tTaxas, pesos);
+    const rEmb = rateio(embalagem, pesos), rImp = rateio(impostos, pesos);
+    let custoTotal = 0;
+    let pendente = false;
+    const porItem = itens.map((i, k) => {
+      const c = custos[i.sku];
+      const semCusto = c === undefined || c === null;
+      if (semCusto) pendente = true;
+      const custo = semCusto ? 0 : c * i.qtd;
+      custoTotal += custo;
+      const receita = i.preco * i.qtd;
+      return {
+        sku: i.sku, nome: i.nome, qtd: i.qtd, receita, cupom: rCupom[k], taxas: rTaxas[k], custo,
+        embalagem: rEmb[k], impostos: rImp[k], semCusto,
+        lucro: receita - rCupom[k] - rTaxas[k] - custo - rEmb[k] - rImp[k],
+      };
+    });
+    const lucro = recebido - custoTotal - embalagem - impostos;
+    return {
+      id: pedido.id, bruto, cupom, taxas, totalTaxas: tTaxas, estimadas, recebido, custo: custoTotal,
+      embalagem, impostos, lucro, margem: base ? (lucro * 100) / base : 0, pendente, itens: porItem,
+    };
+  }
+
+  /** Resumo e ranking de produtos para uma lista de pedidos. */
+  function analisar(pedidos, custos, cfg) {
+    const vendas = pedidos.filter((p) => p.tipo === "venda");
+    const desfeitos = pedidos.filter((p) => p.tipo === "cancelado" || p.tipo === "devolvido").length;
+    const contas = vendas.map((p) => ({ pedido: p, conta: lucroPedido(p, custos, cfg) }));
+    const soma = (f) => contas.reduce((a, c) => a + f(c.conta), 0);
+    const r = {
+      pedidos: vendas.length, desfeitos, itens: vendas.reduce((a, p) => a + p.itens.reduce((b, i) => b + i.qtd, 0), 0),
+      faturamento: soma((c) => c.bruto), cupons: soma((c) => c.cupom), taxas: soma((c) => c.totalTaxas),
+      recebido: soma((c) => c.recebido), custo: soma((c) => c.custo), embalagens: soma((c) => c.embalagem),
+      impostos: soma((c) => c.impostos), lucro: soma((c) => c.lucro),
+      pendentes: contas.filter((c) => c.conta.pendente).length,
+      estimadas: contas.filter((c) => c.conta.estimadas).length,
+    };
+    r.margem = r.faturamento - r.cupons > 0 ? (r.lucro * 100) / (r.faturamento - r.cupons) : 0;
+    const mapa = new Map();
+    for (const { conta } of contas) {
+      for (const it of conta.itens) {
+        const p = mapa.get(it.sku) || { sku: it.sku, nome: it.nome, qtd: 0, faturamento: 0, cupom: 0, taxas: 0, custo: 0, lucro: 0, semCusto: false };
+        p.qtd += it.qtd; p.faturamento += it.receita; p.cupom += it.cupom; p.taxas += it.taxas;
+        p.custo += it.custo; p.lucro += it.lucro; p.semCusto = p.semCusto || it.semCusto;
+        mapa.set(it.sku, p);
+      }
+    }
+    r.produtos = [...mapa.values()].map((p) => ({
+      ...p,
+      margem: p.faturamento - p.cupom > 0 ? (p.lucro * 100) / (p.faturamento - p.cupom) : 0,
+      lucroUnidade: p.qtd ? arred(p.lucro / p.qtd) : 0,
+      precoMedio: p.qtd ? arred(p.faturamento / p.qtd) : 0,
+    }));
+    r.contas = contas;
+    return r;
+  }
+
+  /** Simula a venda de 1 unidade num pedido. */
+  function simular(cfg, preco, custo) {
+    const f = faixaPara(cfg.tabela, preco);
+    const t = taxasPara(cfg, preco, 1);
+    const impostos = pctDe(preco, cfg.aliquota);
+    const recebido = preco - totalTaxas(t);
+    const lucro = recebido - impostos - cfg.embalagem - custo;
+    const zona = faixasAEvitar(cfg).find((z) => preco >= z.de && preco <= z.ate) || null;
+    return { preco, pct: f.pct, comissao: t.comissao, fixa: t.servico, recebido, impostos, embalagem: cfg.embalagem, custo, lucro, margem: preco ? (lucro * 100) / preco : 0, zona };
+  }
+
+  const sobra = (cfg, preco) => preco - totalTaxas(taxasPara(cfg, preco, 1)) - pctDe(preco, cfg.aliquota);
+
+  /** Faixas em que subir o preço faz ganhar menos (a taxa fixa da faixa seguinte come o aumento). */
+  const cacheZonas = new WeakMap();
+  function faixasAEvitar(cfg) {
+    const chave = cfg;
+    if (cacheZonas.has(chave)) return cacheZonas.get(chave);
+    const t = cfg.tabela;
+    const zonas = [];
+    for (let i = 1; i < t.length; i++) {
+      const anterior = t[i - 1], atual = t[i];
+      const ultimo = atual.min - 1;
+      if (ultimo < anterior.min || ultimo <= 0) continue;
+      const ref = sobra(cfg, ultimo);
+      if (sobra(cfg, atual.min) > ref) continue;
+      const limite = limiteSuperior(t, atual);
+      let p = atual.min;
+      let passos = 0;
+      while (sobra(cfg, p) <= ref && passos++ < 200000) {
+        p += 1;
+        if (limite !== null && p >= limite) break;
+      }
+      zonas.push({ de: atual.min, ate: p - 1, melhor: ultimo, fixaAntes: anterior.fixa, fixaDepois: atual.fixa, pctAntes: anterior.pct, pctDepois: atual.pct });
+    }
+    cacheZonas.set(chave, zonas);
+    return zonas;
+  }
+
+  /** Menor preço que atinge a margem desejada (em %). null se impossível. */
+  function precoIdeal(cfg, custo, margem) {
+    const atinge = (p) => simular(cfg, p, custo).lucro * 100 >= margem * p;
+    let melhor = null;
+    for (const f of cfg.tabela) {
+      const porReal = 1 - (f.pct + cfg.aliquota + margem) / 100;
+      if (porReal <= 0) continue;
+      let p = Math.max(Math.ceil((custo + cfg.embalagem + f.fixa + cfg.adicional) / porReal), f.min, 1);
+      const limite = limiteSuperior(cfg.tabela, f);
+      let n = 0;
+      while (!atinge(p) && n++ < 1000) p += 1;
+      n = 0;
+      while (n++ < 1000 && p - 1 >= Math.max(f.min, 1) && atinge(p - 1)) p -= 1;
+      if ((limite === null || p < limite) && atinge(p) && (melhor === null || p < melhor)) melhor = p;
+    }
+    return melhor === null ? null : simular(cfg, melhor, custo);
+  }
+
+  /* ---------- Leitura da planilha ---------- */
+
+  function normalizar(texto) {
+    return String(texto ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  const COLUNAS = {
+    pedido: { obrigatoria: true, rotulo: "Número do pedido", nomes: ["id do pedido", "numero do pedido", "n do pedido", "no do pedido", "order id", "order sn"] },
+    status: { obrigatoria: false, rotulo: "Status do pedido", nomes: ["status do pedido", "order status"] },
+    data: { obrigatoria: false, rotulo: "Data do pedido", nomes: ["data de criacao do pedido", "hora de criacao do pedido", "data do pedido", "order creation date"] },
+    nome: { obrigatoria: true, rotulo: "Nome do produto", nomes: ["nome do produto", "product name"] },
+    variacao: { obrigatoria: false, rotulo: "Variação", nomes: ["nome da variacao", "variation name"] },
+    sku: { obrigatoria: false, rotulo: "SKU da variação", nomes: ["numero de referencia sku", "n de referencia sku", "no de referencia sku", "sku da variacao", "sku reference no", "variation sku"] },
+    skuPrincipal: { obrigatoria: false, rotulo: "SKU principal", nomes: ["n de referencia do sku principal", "numero de referencia do sku principal", "no de referencia do sku principal", "sku principal", "sku do produto", "parent sku reference no", "parent sku"] },
+    qtd: { obrigatoria: true, rotulo: "Quantidade", nomes: ["quantidade", "quantity"] },
+    preco: { obrigatoria: true, rotulo: "Preço de venda", nomes: ["preco acordado", "deal price", "preco de venda"] },
+    precoOriginal: { obrigatoria: false, rotulo: "Preço original", nomes: ["preco original", "original price"] },
+    cupom: { obrigatoria: false, rotulo: "Cupom do vendedor", nomes: ["cupom do vendedor", "seller voucher", "cupom da loja"] },
+    comissao: { obrigatoria: false, rotulo: "Taxa de comissão", nomes: ["taxa de comissao", "commission fee"] },
+    servico: { obrigatoria: false, rotulo: "Taxa de serviço", nomes: ["taxa de servico", "service fee"] },
+    transacao: { obrigatoria: false, rotulo: "Taxa de transação", nomes: ["taxa de transacao", "transaction fee"] },
+  };
+
+  /** Descobre qual coluna é qual pelo nome do cabeçalho. Retorna { campo: índice }. */
+  function detectarColunas(cabecalho) {
+    const norm = cabecalho.map(normalizar);
+    const mapa = {};
+    for (const [campo, def] of Object.entries(COLUNAS)) {
+      let idx = norm.findIndex((h) => def.nomes.includes(h));
+      if (idx < 0) idx = norm.findIndex((h) => def.nomes.some((n) => h.startsWith(n + " ")));
+      if (idx >= 0) mapa[campo] = idx;
+    }
+    if (mapa.preco === undefined && mapa.precoOriginal !== undefined) mapa.preco = mapa.precoOriginal;
+    return mapa;
+  }
+  const faltando = (mapa) => Object.entries(COLUNAS).filter(([c, d]) => d.obrigatoria && mapa[c] === undefined).map(([c]) => c);
+
+  /** "R$ 1.234,56", "1234,56", "1234.56" ou número -> centavos. */
+  function dinheiro(v) {
+    if (v === null || v === undefined || v === "") return null;
+    if (typeof v === "number") return arred(v * 100);
+    let s = String(v).replace(/R\$/g, "").replace(/\s| /g, "");
+    if (!s) return null;
+    if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? arred(n * 100) : NaN;
+  }
+
+  function data(v) {
+    if (v instanceof Date && !isNaN(v)) return v;
+    if (typeof v === "number") return new Date(Math.round((v - 25569) * 86400000));
+    const s = String(v ?? "").trim();
+    let m = s.match(/^(\d{4})[-/](\d{2})[-/](\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0));
+    m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2}))?/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0));
+    return null;
+  }
+
+  /** Data e hora locais no formato 2026-09-30T22:15 (sem fuso), para o mês não mudar por causa do UTC. */
+  function dataLocal(d) {
+    const z = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`;
+  }
+
+  /** Classifica o status escrito pela Shopee. */
+  function tipoDoStatus(texto) {
+    const t = normalizar(texto);
+    if (!t) return { tipo: "venda", conhecido: false };
+    if (t.includes("cancel")) return { tipo: "cancelado", conhecido: true };
+    if (/devol|reembols|return|refund/.test(t)) return { tipo: "devolvido", conhecido: true };
+    if (/nao pago|aguardando pagamento|a pagar|unpaid/.test(t)) return { tipo: "naoPago", conhecido: true };
+    if (/conclu|complet|finaliz|a enviar|para enviar|aguardando envio|pronto para envio|processad|to ship|enviado|a caminho|em transito|entregue|shipped|delivered/.test(t)) return { tipo: "venda", conhecido: true };
+    return { tipo: "venda", conhecido: false };
+  }
+
+  function identificador(sku, skuPrincipal, nome, variacao) {
+    const s = String(sku ?? "").trim() || String(skuPrincipal ?? "").trim();
+    if (s) return s.toUpperCase();
+    const base = `${nome ?? ""} ${variacao ?? ""}`.normalize("NFD").replace(/\p{M}/gu, "").toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return (base || "SEM-SKU").slice(0, 60).replace(/-+$/, "");
+  }
+
+  /**
+   * Converte as linhas da planilha em pedidos. Só lê as colunas do mapa: nome, telefone e endereço
+   * do comprador nunca saem da planilha.
+   */
+  function montarPedidos(linhas, mapa) {
+    const grupos = new Map();
+    const erros = [];
+    const statusDesconhecidos = new Set();
+    linhas.forEach((linha, i) => {
+      const id = String(linha[mapa.pedido] ?? "").trim();
+      if (!id) return;
+      if (!grupos.has(id)) grupos.set(id, []);
+      grupos.get(id).push({ linha, numero: i });
+    });
+    const pedidos = [];
+    for (const [id, grupo] of grupos) {
+      try {
+        const primeira = grupo[0].linha;
+        const st = mapa.status !== undefined ? tipoDoStatus(primeira[mapa.status]) : { tipo: "venda", conhecido: true };
+        if (!st.conhecido) statusDesconhecidos.add(String(primeira[mapa.status] ?? ""));
+        const itens = grupo.map(({ linha }) => {
+          const qtd = Number(String(linha[mapa.qtd] ?? "").replace(",", "."));
+          if (!Number.isInteger(qtd) || qtd <= 0) throw new Error("quantidade inválida");
+          let preco = dinheiro(linha[mapa.preco]);
+          if ((preco === null || preco === 0) && mapa.precoOriginal !== undefined) preco = dinheiro(linha[mapa.precoOriginal]);
+          if (preco === null || Number.isNaN(preco) || preco < 0) throw new Error("preço inválido");
+          const nome = String(linha[mapa.nome] ?? "").trim();
+          if (!nome) throw new Error("produto sem nome");
+          const variacao = mapa.variacao !== undefined ? String(linha[mapa.variacao] ?? "").trim() : "";
+          return {
+            sku: identificador(mapa.sku !== undefined ? linha[mapa.sku] : "", mapa.skuPrincipal !== undefined ? linha[mapa.skuPrincipal] : "", nome, variacao),
+            nome: variacao ? `${nome} - ${variacao}` : nome, qtd, preco,
+          };
+        });
+        // Taxas e cupom são do pedido: se todas as linhas repetem o mesmo valor, conta uma vez; se variam, soma.
+        const valorDoPedido = (campo) => {
+          if (mapa[campo] === undefined) return null;
+          const vals = grupo.map(({ linha }) => Math.abs(dinheiro(linha[mapa[campo]]) || 0));
+          return vals.every((v) => v === vals[0]) ? vals[0] : vals.reduce((a, b) => a + b, 0);
+        };
+        const temTaxa = ["comissao", "servico", "transacao"].some((c) => mapa[c] !== undefined);
+        const quando = mapa.data !== undefined ? data(primeira[mapa.data]) : null;
+        pedidos.push({
+          id, tipo: st.tipo, status: mapa.status !== undefined ? String(primeira[mapa.status] ?? "") : "",
+          data: quando ? dataLocal(quando) : null,
+          cupom: valorDoPedido("cupom") || 0,
+          taxas: temTaxa ? { comissao: valorDoPedido("comissao") || 0, servico: valorDoPedido("servico") || 0, transacao: valorDoPedido("transacao") || 0 } : null,
+          itens,
+        });
+      } catch (e) {
+        erros.push({ pedido: id, linha: grupo[0].numero, motivo: e.message });
+      }
+    }
+    return { pedidos, erros, statusDesconhecidos: [...statusDesconhecidos].filter(Boolean) };
+  }
+
+  /** Encontra a linha de cabeçalho (a Shopee às vezes põe linhas antes dela). */
+  function acharCabecalho(matriz) {
+    for (let i = 0; i < Math.min(matriz.length, 10); i++) {
+      const mapa = detectarColunas(matriz[i] || []);
+      if (mapa.pedido !== undefined) return i;
+    }
+    return -1;
+  }
+
+  return {
+    CONFIG_PADRAO, TABELA_2026, COLUNAS, arred, pctDe, faixaPara, limiteSuperior, taxasPara, rateio, lucroPedido,
+    analisar, simular, faixasAEvitar, precoIdeal, normalizar, detectarColunas, faltando, dinheiro, data,
+    tipoDoStatus, identificador, montarPedidos, acharCabecalho,
+  };
+})();
+
+</script>
+<script>
+(() => {
+  const M = Margem;
+  const EXEMPLO_PEDIDOS = [{"id":"2609010A1B2C","tipo":"venda","status":"Concluído","data":"2026-09-01T09:12","cupom":0,"taxas":{"comissao":1198,"servico":400,"transacao":0},"itens":[{"sku":"GARRAFA-INOX-500","nome":"Garrafa Térmica Inox 500ml - Preta","qtd":1,"preco":5990}]},{"id":"2609020D3E4F","tipo":"venda","status":"Concluído","data":"2026-09-02T14:40","cupom":0,"taxas":{"comissao":796,"servico":800,"transacao":0},"itens":[{"sku":"SUPORTE-CELULAR","nome":"Suporte de Celular Articulado - Branco","qtd":2,"preco":1990}]},{"id":"2609030G5H6I","tipo":"venda","status":"Concluído","data":"2026-09-03T19:05","cupom":500,"taxas":{"comissao":1496,"servico":800,"transacao":0},"itens":[{"sku":"KIT-POTES-3","nome":"Kit 3 Potes Herméticos de Vidro","qtd":1,"preco":4990},{"sku":"ORGANIZADOR-GAVETA","nome":"Organizador de Gaveta 8 Divisórias","qtd":1,"preco":2490}]},{"id":"2609050J7K8L","tipo":"venda","status":"Concluído","data":"2026-09-05T11:22","cupom":0,"taxas":{"comissao":1189,"servico":1600,"transacao":0},"itens":[{"sku":"LUMINARIA-LED","nome":"Luminária LED de Mesa Recarregável","qtd":1,"preco":8490}]},{"id":"2609060M9N0O","tipo":"cancelado","status":"Cancelado","data":"2026-09-06T08:50","cupom":0,"taxas":{"comissao":0,"servico":0,"transacao":0},"itens":[{"sku":"CAFETEIRA-ITALIANA","nome":"Cafeteira Italiana 6 Xícaras","qtd":1,"preco":12990}]},{"id":"2609080P1Q2R","tipo":"venda","status":"Concluído","data":"2026-09-08T21:15","cupom":0,"taxas":{"comissao":1494,"servico":1200,"transacao":0},"itens":[{"sku":"ORGANIZADOR-GAVETA","nome":"Organizador de Gaveta 8 Divisórias","qtd":3,"preco":2490}]},{"id":"2609100S3T4U","tipo":"venda","status":"Concluído","data":"2026-09-10T10:03","cupom":500,"taxas":{"comissao":2396,"servico":800,"transacao":0},"itens":[{"sku":"GARRAFA-INOX-500","nome":"Garrafa Térmica Inox 500ml - Preta","qtd":2,"preco":5990}]},{"id":"2609120V5W6X","tipo":"venda","status":"Concluído","data":"2026-09-12T16:48","cupom":0,"taxas":{"comissao":1819,"servico":2000,"transacao":0},"itens":[{"sku":"CAFETEIRA-ITALIANA","nome":"Cafeteira Italiana 6 Xícaras","qtd":1,"preco":12990}]},{"id":"2609140Y7Z8A","tipo":"venda","status":"Concluído","data":"2026-09-14T13:30","cupom":0,"taxas":{"comissao":398,"servico":400,"transacao":0},"itens":[{"sku":"SUPORTE-CELULAR","nome":"Suporte de Celular Articulado - Branco","qtd":1,"preco":1990}]},{"id":"2609150B9C0D","tipo":"venda","status":"Concluído","data":"2026-09-15T18:02","cupom":0,"taxas":{"comissao":1398,"servico":400,"transacao":0},"itens":[{"sku":"CAPA-NOTEBOOK-15","nome":"Capa para Notebook 15,6 polegadas - Cinza","qtd":1,"preco":6990}]},{"id":"2609170E1F2G","tipo":"devolvido","status":"Devolução/Reembolso","data":"2026-09-17T12:10","cupom":0,"taxas":{"comissao":1189,"servico":1600,"transacao":0},"itens":[{"sku":"LUMINARIA-LED","nome":"Luminária LED de Mesa Recarregável","qtd":1,"preco":8490}]},{"id":"2609190H3I4J","tipo":"venda","status":"Concluído","data":"2026-09-19T09:45","cupom":0,"taxas":{"comissao":1996,"servico":800,"transacao":0},"itens":[{"sku":"KIT-POTES-3","nome":"Kit 3 Potes Herméticos de Vidro","qtd":2,"preco":4990}]},{"id":"2609210K5L6M","tipo":"venda","status":"Concluído","data":"2026-09-21T20:30","cupom":0,"taxas":{"comissao":1596,"servico":800,"transacao":0},"itens":[{"sku":"GARRAFA-INOX-500","nome":"Garrafa Térmica Inox 500ml - Preta","qtd":1,"preco":5990},{"sku":"SUPORTE-CELULAR","nome":"Suporte de Celular Articulado - Branco","qtd":1,"preco":1990}]},{"id":"2609230N7O8P","tipo":"venda","status":"Enviado","data":"2026-09-23T15:15","cupom":0,"taxas":{"comissao":996,"servico":800,"transacao":0},"itens":[{"sku":"ORGANIZADOR-GAVETA","nome":"Organizador de Gaveta 8 Divisórias","qtd":2,"preco":2490}]},{"id":"2609250Q9R0S","tipo":"venda","status":"Enviado","data":"2026-09-25T10:40","cupom":0,"taxas":{"comissao":1189,"servico":1600,"transacao":0},"itens":[{"sku":"LUMINARIA-LED","nome":"Luminária LED de Mesa Recarregável","qtd":1,"preco":8490}]},{"id":"2609260T1U2V","tipo":"venda","status":"Enviado","data":"2026-09-26T17:55","cupom":500,"taxas":{"comissao":1819,"servico":2000,"transacao":0},"itens":[{"sku":"CAFETEIRA-ITALIANA","nome":"Cafeteira Italiana 6 Xícaras","qtd":1,"preco":12990}]},{"id":"2609270W3X4Y","tipo":"naoPago","status":"Não pago","data":"2026-09-27T22:10","cupom":0,"taxas":{"comissao":0,"servico":0,"transacao":0},"itens":[{"sku":"GARRAFA-INOX-500","nome":"Garrafa Térmica Inox 500ml - Preta","qtd":1,"preco":5990}]},{"id":"2609280Z5A6B","tipo":"venda","status":"A Enviar","data":"2026-09-28T11:05","cupom":0,"taxas":{"comissao":1396,"servico":800,"transacao":0},"itens":[{"sku":"SUPORTE-CELULAR","nome":"Suporte de Celular Articulado - Branco","qtd":1,"preco":1990},{"sku":"KIT-POTES-3","nome":"Kit 3 Potes Herméticos de Vidro","qtd":1,"preco":4990}]},{"id":"2609290C7D8E","tipo":"venda","status":"A Enviar","data":"2026-09-29T08:30","cupom":0,"taxas":{"comissao":1198,"servico":400,"transacao":0},"itens":[{"sku":"GARRAFA-INOX-500","nome":"Garrafa Térmica Inox 500ml - Preta","qtd":1,"preco":5990}]}];
+  const EXEMPLO_CUSTOS = { "GARRAFA-INOX-500": 2240, "KIT-POTES-3": 2400, "ORGANIZADOR-GAVETA": 1280, "SUPORTE-CELULAR": 1390, "LUMINARIA-LED": 3150, "CAFETEIRA-ITALIANA": 5800 };
+  const CHAVE = "margem.v1";
+
+  const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+  const dinheiro = (c) => brl.format((c || 0) / 100);
+  const pct = (v) => `${(Math.round(v * 10) / 10).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+  const mesNome = (chave) => { const [a, m] = chave.split("-"); return new Date(+a, +m - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }); };
+  const dataCurta = (iso) => iso ? new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "";
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const $ = (sel) => document.querySelector(sel);
+
+  /* ---------- Estado (guardado só neste navegador) ---------- */
+  function ler(chave, padrao) {
+    try { const v = localStorage.getItem(`${CHAVE}.${chave}`); return v ? JSON.parse(v) : padrao; } catch { return padrao; }
+  }
+  function gravar(chave, valor) {
+    try { localStorage.setItem(`${CHAVE}.${chave}`, JSON.stringify(valor)); return true; } catch { return false; }
+  }
+  const estado = {
+    pedidos: ler("pedidos", null),
+    custos: ler("custos", {}),
+    config: { ...M.CONFIG_PADRAO, ...ler("config", {}) },
+    arquivo: ler("arquivo", null),
+    aba: "resumo",
+    periodo: null,
+    filtroPedidos: "todos",
+    ordem: "lucro",
+    limitePedidos: 60,
+    pendente: null,
+  };
+  if (!Array.isArray(estado.config.tabela) || !estado.config.tabela.length) estado.config.tabela = M.TABELA_2026;
+  const exemplo = () => !estado.pedidos || !estado.pedidos.length;
+  const pedidosAtuais = () => exemplo() ? EXEMPLO_PEDIDOS : estado.pedidos;
+  const custosAtuais = () => exemplo() ? EXEMPLO_CUSTOS : estado.custos;
+  let configCongelada = null;
+  const cfg = () => configCongelada || (configCongelada = { ...estado.config });
+
+  function salvarCustos() { if (!exemplo()) gravar("custos", estado.custos); }
+  function salvarConfig() { configCongelada = null; gravar("config", { embalagem: estado.config.embalagem, aliquota: estado.config.aliquota, adicional: estado.config.adicional, tabela: estado.config.tabela }); }
+
+  function toast(texto) {
+    const t = $("#toast");
+    t.textContent = texto;
+    t.hidden = false;
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => { t.hidden = true; }, 3800);
+  }
+
+  /* ---------- Períodos ---------- */
+  function meses() {
+    const set = new Set(pedidosAtuais().filter((p) => p.data).map((p) => p.data.slice(0, 7)));
+    return [...set].sort().reverse();
+  }
+  function pedidosDoPeriodo() {
+    const todos = pedidosAtuais();
+    if (!estado.periodo || estado.periodo === "tudo") return todos;
+    return todos.filter((p) => p.data && p.data.slice(0, 7) === estado.periodo);
+  }
+  function montarPeriodo() {
+    const lista = meses();
+    if (!estado.periodo || (estado.periodo !== "tudo" && !lista.includes(estado.periodo))) estado.periodo = lista[0] || "tudo";
+    $("#periodo").innerHTML = lista.map((m) => `<option value="${m}">${esc(mesNome(m))}</option>`).join("") + `<option value="tudo">Todo o período</option>`;
+    $("#periodo").value = estado.periodo;
+    $("#periodo-envelope").hidden = estado.aba === "simulador" || estado.aba === "ajustes";
+  }
+
+  /* ---------- Faixa de aviso (exemplo x planilha real) ---------- */
+  const COMO_BAIXAR = `<details class="como"><summary>Como baixar a planilha na Shopee</summary><ol>
+    <li>Abra a <b>Central do Vendedor</b> no computador.</li>
+    <li>Vá em <b>Pedidos → Meus Pedidos</b> e clique em <b>Exportar</b>.</li>
+    <li>Escolha o período (por exemplo, o mês passado) e baixe o arquivo <b>Order.all…xlsx</b>.</li>
+    <li>Volte aqui e clique em <b>Enviar planilha</b> (ou arraste o arquivo para esta página).</li></ol></details>`;
+  function montarAviso() {
+    const a = $("#aviso");
+    if (exemplo()) {
+      a.className = "aviso exemplo";
+      a.innerHTML = `<div class="texto"><strong>Você está vendo um exemplo com dados inventados.</strong>
+        <span class="pequeno">Envie a planilha de pedidos da sua loja para ver os seus números.</span>${COMO_BAIXAR}</div>
+        <button class="botao" type="button" data-enviar>Enviar minha planilha</button>`;
+    } else {
+      const total = estado.pedidos.length;
+      a.className = "aviso";
+      a.innerHTML = `<div class="texto"><strong>${total} pedidos carregados</strong>
+        <span class="pequeno suave">Última planilha: ${esc(estado.arquivo?.nome || "")} ${estado.arquivo?.quando ? "· enviada em " + new Date(estado.arquivo.quando).toLocaleDateString("pt-BR") : ""}. Para somar outro mês, é só enviar outra planilha: pedidos repetidos não contam duas vezes.</span></div>
+        <button class="botao secundario pequeno" type="button" data-enviar>Enviar outra planilha</button>`;
+    }
+  }
+
+  /* ---------- Resumo ---------- */
+  function atencoes(r) {
+    const itens = [];
+    const semCusto = r.produtos.filter((p) => p.semCusto);
+    if (semCusto.length) {
+      itens.push({ cls: "", html: `<b>${semCusto.length} produto${semCusto.length > 1 ? "s" : ""} sem custo informado.</b> Sem o custo, o lucro aparece maior do que é.
+        <div class="acao"><button class="link" data-ir="produtos">Informar os custos</button></div>` });
+    }
+    r.produtos.filter((p) => !p.semCusto && p.lucro < 0).sort((a, b) => a.lucro - b.lucro).forEach((p) => {
+      itens.push({ cls: "ruim", html: `<b>${esc(p.nome)}</b> está dando prejuízo: <span class="num negativo">${dinheiro(p.lucroUnidade)}</span> por unidade vendida.
+        <div class="acao"><button class="link" data-simular="${esc(p.sku)}">Simular um preço melhor</button></div>` });
+    });
+    r.produtos.filter((p) => !p.semCusto && p.lucro >= 0 && p.margem < 10).forEach((p) => {
+      itens.push({ cls: "", html: `<b>${esc(p.nome)}</b> vende bem (${p.qtd} un.), mas sobra só <span class="num">${dinheiro(p.lucroUnidade)}</span> por unidade (${pct(p.margem)}).` });
+    });
+    const zonas = M.faixasAEvitar(cfg());
+    r.produtos.forEach((p) => {
+      const z = zonas.find((z) => p.precoMedio >= z.de && p.precoMedio <= z.ate);
+      if (z) itens.push({ cls: "", html: `<b>${esc(p.nome)}</b> é vendido a <span class="num">${dinheiro(p.precoMedio)}</span>. Vendendo a <span class="num">${dinheiro(z.melhor)}</span> você ganharia mais: acima de ${dinheiro(z.de)} a taxa fixa da Shopee sobe de ${dinheiro(z.fixaAntes)} para ${dinheiro(z.fixaDepois)}.` });
+    });
+    if (r.estimadas) {
+      itens.push({ cls: "", html: `${r.estimadas} pedido${r.estimadas > 1 ? "s" : ""} vieram sem as taxas na planilha. Calculei pela tabela da Shopee.` });
+    }
+    if (!itens.length && r.pedidos) itens.push({ cls: "bom", html: `Nenhum produto no prejuízo neste período.` });
+    return itens;
+  }
+
+  function telaResumo() {
+    const r = M.analisar(pedidosDoPeriodo(), custosAtuais(), cfg());
+    if (!r.pedidos) return `<div class="cartao vazio">Nenhuma venda neste período.</div>`;
+    const quando = estado.periodo === "tudo" ? "No período todo" : `Em ${mesNome(estado.periodo)}`;
+    const base = r.faturamento || 1;
+    const fatias = [
+      { nome: "Taxas da Shopee", valor: r.taxas, cor: "var(--shopee-cor)" },
+      { nome: "Custo dos produtos", valor: r.custo, cor: "var(--produto-cor)" },
+      { nome: "Impostos", valor: r.impostos, cor: "var(--imposto-cor)" },
+      { nome: "Embalagens e cupons", valor: r.embalagens + r.cupons, cor: "var(--outros-cor)" },
+      { nome: r.lucro >= 0 ? "Lucro" : "Prejuízo", valor: r.lucro, cor: r.lucro >= 0 ? "var(--lucro)" : "var(--prejuizo)" },
+    ];
+    const barras = fatias.filter((f) => f.valor > 0).map((f) => `<span style="width:${(f.valor * 100) / base}%;background:${f.cor}" title="${esc(f.nome)}"></span>`).join("");
+    const legenda = fatias.map((f) => `<div class="l"><i style="background:${f.cor}"></i><span>${f.nome}</span>
+      <span class="v num">${dinheiro(f.valor)}</span><span class="c100 num">${dinheiro(Math.round((f.valor * 10000) / base))}</span></div>`).join("");
+    const lista = atencoes(r).map((i) => `<li class="${i.cls}"><div>${i.html}</div></li>`).join("");
+    const chipMargem = r.lucro < 0 ? `<span class="chip ruim">prejuízo</span>` : r.margem < 10 ? `<span class="chip atencao">margem ${pct(r.margem)}</span>` : `<span class="chip bom">margem ${pct(r.margem)}</span>`;
+    return `
+      <div class="cartao">
+        <p class="frase">${quando} você vendeu <b class="num">${dinheiro(r.faturamento)}</b> e ${r.lucro >= 0 ? `sobrou <b class="ganho num">${dinheiro(r.lucro)}</b> de lucro.` : `teve <b class="perda num">${dinheiro(-r.lucro)}</b> de prejuízo.`}</p>
+        <div>${chipMargem} ${r.pendentes ? `<span class="chip atencao">${r.pendentes} pedido${r.pendentes > 1 ? "s" : ""} com custo faltando</span>` : ""}</div>
+        <div class="numeros">
+          <div class="numero"><small>Pedidos</small><b>${r.pedidos}</b></div>
+          <div class="numero"><small>Itens vendidos</small><b>${r.itens}</b></div>
+          <div class="numero"><small>Caiu na conta</small><b>${dinheiro(r.recebido)}</b></div>
+          <div class="numero"><small>Lucro por pedido</small><b>${dinheiro(Math.round(r.lucro / r.pedidos))}</b></div>
+          <div class="numero"><small>Cancelados/devolvidos</small><b>${r.desfeitos}</b></div>
+        </div>
+      </div>
+      <div class="grade-2" style="margin-top:20px">
+        <div class="cartao">
+          <h2>Para onde foi o dinheiro</h2>
+          <p class="suave pequeno">Tudo o que os clientes pagaram, dividido entre a Shopee, o fornecedor, o governo e você.</p>
+          <div class="barra100" role="img" aria-label="Divisão do faturamento">${barras}</div>
+          <div class="legenda"><div class="l cab"><i></i><span></span><span class="v">Total</span><span class="c100">A cada R$ 100</span></div>${legenda}</div>
+        </div>
+        <div class="cartao">
+          <h2>O que merece atenção</h2>
+          <ul class="lista-atencao">${lista}</ul>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- Produtos ---------- */
+  function statusProduto(p) {
+    if (p.semCusto) return `<span class="chip atencao">falta o custo</span>`;
+    if (p.lucro < 0) return `<span class="chip ruim">prejuízo</span>`;
+    if (p.margem < 10) return `<span class="chip atencao">margem baixa</span>`;
+    return `<span class="chip bom">bom</span>`;
+  }
+  function ordenar(lista) {
+    const f = {
+      lucro: (a, b) => b.lucro - a.lucro,
+      vendidos: (a, b) => b.qtd - a.qtd,
+      margem: (a, b) => (a.semCusto - b.semCusto) || (a.margem - b.margem),
+      falta: (a, b) => (b.semCusto - a.semCusto) || (b.qtd - a.qtd),
+    }[estado.ordem];
+    return [...lista].sort(f);
+  }
+  function valorCusto(sku) {
+    const c = custosAtuais()[sku];
+    return c === undefined || c === null ? "" : (c / 100).toFixed(2).replace(".", ",");
+  }
+  function telaProdutos() {
+    const r = M.analisar(pedidosDoPeriodo(), custosAtuais(), cfg());
+    if (!r.produtos.length) return `<div class="cartao vazio">Nenhum produto vendido neste período.</div>`;
+    const linhas = ordenar(r.produtos).map((p) => `
+      <tr data-sku="${esc(p.sku)}">
+        <td><div class="produto-nome">${esc(p.nome)}</div><div class="sku">${esc(p.sku)}</div></td>
+        <td class="dir num">${p.qtd}</td>
+        <td class="dir num">${dinheiro(p.precoMedio)}</td>
+        <td><label class="campo-custo ${p.semCusto ? "falta" : ""}"><span>R$</span>
+          <input inputmode="decimal" aria-label="Custo de ${esc(p.nome)}" data-custo="${esc(p.sku)}" value="${valorCusto(p.sku)}" placeholder="0,00"></label></td>
+        <td class="dir num ${p.lucroUnidade < 0 ? "negativo" : ""}" data-campo="un">${p.semCusto ? "—" : dinheiro(p.lucroUnidade)}</td>
+        <td class="dir num ${p.lucro < 0 ? "negativo" : ""}" data-campo="total">${p.semCusto ? "—" : dinheiro(p.lucro)}</td>
+        <td data-campo="status">${statusProduto(p)}</td>
+      </tr>`).join("");
+    return `
+      <div class="cartao">
+        <div class="barra">
+          <div><h2>Seus produtos</h2><p class="suave pequeno">Digite quanto cada produto custa para você (o preço que você paga ao fornecedor). O lucro atualiza na hora.</p></div>
+          <label class="ordenar"><span class="suave pequeno">Ordenar por</span>
+            <select id="ordem">
+              <option value="lucro">Mais lucro</option><option value="vendidos">Mais vendidos</option>
+              <option value="margem">Pior margem</option><option value="falta">Sem custo primeiro</option>
+            </select></label>
+        </div>
+        <div class="tabela-envelope"><table>
+          <thead><tr><th>Produto</th><th class="dir">Vendidos</th><th class="dir">Preço médio</th><th>Custo por unidade</th><th class="dir">Lucro por unidade</th><th class="dir">Lucro total</th><th>Situação</th></tr></thead>
+          <tbody>${linhas}</tbody></table></div>
+        ${exemplo() ? `<p class="suave pequeno">No exemplo os custos já vêm preenchidos. Com a sua planilha, você digita os seus.</p>` : ""}
+      </div>`;
+  }
+  function atualizarLinhasProdutos() {
+    const r = M.analisar(pedidosDoPeriodo(), custosAtuais(), cfg());
+    for (const p of r.produtos) {
+      const tr = document.querySelector(`tr[data-sku="${CSS.escape(p.sku)}"]`);
+      if (!tr) continue;
+      const un = tr.querySelector('[data-campo="un"]'), total = tr.querySelector('[data-campo="total"]');
+      un.textContent = p.semCusto ? "—" : dinheiro(p.lucroUnidade);
+      un.className = `dir num ${p.lucroUnidade < 0 && !p.semCusto ? "negativo" : ""}`;
+      total.textContent = p.semCusto ? "—" : dinheiro(p.lucro);
+      total.className = `dir num ${p.lucro < 0 && !p.semCusto ? "negativo" : ""}`;
+      tr.querySelector('[data-campo="status"]').innerHTML = statusProduto(p);
+      tr.querySelector(".campo-custo").classList.toggle("falta", p.semCusto);
+    }
+  }
+
+  /* ---------- Pedidos ---------- */
+  function comprovante(c, extra = "") {
+    const r = (a, b, cls = "") => `<div class="r ${cls}"><span>${a}</span><span>${b}</span></div>`;
+    const itens = c.itens.map((i) => r(`${i.qtd}x ${esc(i.nome)}`, dinheiro(i.receita))).join("");
+    return `<div class="comprovante">
+      ${itens}
+      <div class="sep"></div>
+      ${r("Cliente pagou", dinheiro(c.bruto))}
+      ${c.cupom ? r("Cupom da loja", "− " + dinheiro(c.cupom)) : ""}
+      ${r("Comissão da Shopee" + (c.estimadas ? " (estimada)" : ""), "− " + dinheiro(c.taxas.comissao))}
+      ${r("Taxa fixa / serviço" + (c.estimadas ? " (estimada)" : ""), "− " + dinheiro(c.taxas.servico + c.taxas.transacao))}
+      <div class="sep"></div>
+      ${r("Caiu na conta", dinheiro(c.recebido), "total")}
+      ${r("Custo dos produtos", c.pendente ? "falta custo" : "− " + dinheiro(c.custo))}
+      ${r("Imposto", "− " + dinheiro(c.impostos))}
+      ${r("Embalagem", "− " + dinheiro(c.embalagem))}
+      <div class="sep"></div>
+      ${r(c.lucro >= 0 ? "Lucro" : "Prejuízo", `<span class="${c.lucro < 0 ? "negativo" : "positivo"}">${dinheiro(c.lucro)}</span>`, "total")}
+      ${extra}
+    </div>`;
+  }
+  function telaPedidos() {
+    const custos = custosAtuais();
+    const todos = pedidosDoPeriodo().slice().sort((a, b) => (b.data || "").localeCompare(a.data || ""));
+    const comConta = todos.map((p) => ({ p, c: p.tipo === "venda" ? M.lucroPedido(p, custos, cfg()) : null }));
+    const filtros = {
+      todos: () => true,
+      prejuizo: (x) => x.c && x.c.lucro < 0 && !x.c.pendente,
+      semcusto: (x) => x.c && x.c.pendente,
+      cancelados: (x) => !x.c,
+    };
+    const lista = comConta.filter(filtros[estado.filtroPedidos]);
+    const botoes = [["todos", "Todos"], ["prejuizo", "Deram prejuízo"], ["semcusto", "Custo faltando"], ["cancelados", "Cancelados e outros"]]
+      .map(([k, t]) => `<button class="filtro" data-filtro="${k}" aria-pressed="${estado.filtroPedidos === k}">${t} (${comConta.filter(filtros[k]).length})</button>`).join("");
+    const nomeTipo = { cancelado: "cancelado", devolvido: "devolvido", naoPago: "não pago" };
+    const itens = lista.slice(0, estado.limitePedidos).map(({ p, c }) => {
+      const resumoItens = p.itens.map((i) => `${i.qtd}x ${i.nome}`).join(", ");
+      const direita = c
+        ? `<div class="num">${dinheiro(c.bruto)}</div><div class="num ${c.lucro < 0 ? "negativo" : "positivo"}">${c.pendente ? '<span class="chip atencao">falta custo</span>' : (c.lucro >= 0 ? "+" : "") + dinheiro(c.lucro)}</div>`
+        : `<span class="chip neutro">${esc(nomeTipo[p.tipo] || p.status)}</span>`;
+      return `<details class="pedido"><summary>
+        <div class="quem"><b>${esc(p.id)}</b> <span class="suave pequeno">${dataCurta(p.data)}</span><div class="itens-txt">${esc(resumoItens)}</div></div>
+        <div class="valores">${direita}</div></summary>
+        ${c ? comprovante(c) : `<div class="comprovante"><div class="nota">Pedido ${nomeTipo[p.tipo] || ""}: não entra no faturamento nem no lucro.</div></div>`}
+      </details>`;
+    }).join("");
+    const mais = lista.length > estado.limitePedidos ? `<button class="botao secundario" id="mais-pedidos">Mostrar mais (${lista.length - estado.limitePedidos})</button>` : "";
+    return `<div class="cartao">
+      <h2>Pedidos</h2>
+      <p class="suave pequeno">Toque num pedido para ver a conta aberta: quanto o cliente pagou, quanto a Shopee ficou e quanto sobrou.</p>
+      <div class="filtros">${botoes}</div>
+      <div class="pedidos">${itens || `<div class="vazio">Nenhum pedido aqui.</div>`}</div>${mais}
+    </div>`;
+  }
+
+  /* ---------- Simulador ---------- */
+  function lerCentavos(texto) {
+    const c = M.dinheiro(String(texto || "").trim());
+    return c === null || Number.isNaN(c) ? null : c;
+  }
+  function telaSimulador() {
+    const zonas = M.faixasAEvitar(cfg());
+    const listaZonas = zonas.map((z) => `<li><div><b class="num">${dinheiro(z.de)} a ${dinheiro(z.ate)}</b><br>
+      <span class="pequeno">Qualquer preço nessa faixa rende menos do que vender a <span class="num">${dinheiro(z.melhor)}</span>. A taxa fixa sobe de ${dinheiro(z.fixaAntes)} para ${dinheiro(z.fixaDepois)}.</span></div></li>`).join("");
+    const s = estado.pendente || {};
+    return `<div class="grade-2 simulador">
+      <div class="cartao">
+        <h2>Vendendo a esse preço, quanto sobra?</h2>
+        <div class="campos">
+          <label class="campo" for="sim-custo">Quanto o produto custa para você<div class="entrada"><span>R$</span><input id="sim-custo" inputmode="decimal" value="${esc(s.custo ?? "31,50")}"></div></label>
+          <label class="campo" for="sim-preco">Preço de venda na Shopee<div class="entrada"><span>R$</span><input id="sim-preco" inputmode="decimal" value="${esc(s.preco ?? "84,90")}"></div></label>
+        </div>
+        <div id="sim-resultado"></div>
+      </div>
+      <div style="display:grid;gap:20px;align-content:start">
+        <div class="cartao">
+          <h2>Por quanto vender?</h2>
+          <label class="campo" for="sim-margem">Quanto quero ganhar sobre o preço de venda<div class="entrada"><input id="sim-margem" inputmode="decimal" value="20"><span>%</span></div></label>
+          <div id="sim-ideal"></div>
+        </div>
+        <div class="cartao">
+          <h2>Preços para evitar</h2>
+          <p class="suave pequeno">Nessas faixas, cobrar mais faz você ganhar menos, porque o item muda de faixa na tabela da Shopee.</p>
+          <ul class="lista-atencao">${listaZonas}</ul>
+        </div>
+      </div>
+    </div>`;
+  }
+  function atualizarSimulador() {
+    const custo = lerCentavos($("#sim-custo")?.value);
+    const preco = lerCentavos($("#sim-preco")?.value);
+    const margem = Number(String($("#sim-margem")?.value || "").replace(",", "."));
+    const saida = $("#sim-resultado"), ideal = $("#sim-ideal");
+    if (!saida) return;
+    if (custo === null || preco === null || preco <= 0) {
+      saida.innerHTML = `<p class="suave">Preencha o custo e o preço com números, por exemplo 31,50.</p>`;
+    } else {
+      const s = M.simular(cfg(), preco, custo);
+      const conta = { itens: [{ qtd: 1, nome: "unidade", receita: preco }], bruto: preco, cupom: 0, estimadas: false,
+        taxas: { comissao: s.comissao, servico: s.fixa, transacao: 0 }, recebido: s.recebido, custo: s.custo, pendente: false,
+        impostos: s.impostos, embalagem: s.embalagem, lucro: s.lucro };
+      const alerta = s.zona ? `<div class="sep"></div><div class="nota"><b>Atenção:</b> vendendo a ${dinheiro(s.zona.melhor)} você ganharia mais. Acima de ${dinheiro(s.zona.de)} a taxa fixa sobe de ${dinheiro(s.zona.fixaAntes)} para ${dinheiro(s.zona.fixaDepois)}.</div>` : "";
+      saida.innerHTML = `<p>Margem: ${s.lucro < 0 ? `<span class="chip ruim">prejuízo</span>` : `<span class="chip ${s.margem < 10 ? "atencao" : "bom"}">${pct(s.margem)}</span>`} <span class="suave pequeno">comissão de ${s.pct}% nessa faixa de preço</span></p>${comprovante(conta, alerta)}`;
+    }
+    if (custo === null || !Number.isFinite(margem) || margem < 0 || margem >= 100) {
+      ideal.innerHTML = `<p class="suave">Informe o custo ao lado e uma margem entre 0 e 99%.</p>`;
+    } else {
+      const r = M.precoIdeal(cfg(), custo, margem);
+      ideal.innerHTML = r
+        ? `<p>Venda por</p><p class="resposta num">${dinheiro(r.preco)}</p><p class="suave pequeno">Sobram ${dinheiro(r.lucro)} por unidade (${pct(r.margem)}). É o menor preço que chega nessa margem.</p>`
+        : `<p><span class="chip ruim">Não dá</span> Com as taxas atuais, nenhum preço chega a ${esc(String(margem))}% de margem. Tente uma margem menor.</p>`;
+    }
+    estado.pendente = { custo: $("#sim-custo").value, preco: $("#sim-preco").value };
+  }
+
+  /* ---------- Ajustes ---------- */
+  function telaAjustes() {
+    const c = estado.config;
+    const tabela = c.tabela.map((f, i) => {
+      const lim = M.limiteSuperior(c.tabela, f);
+      return `<tr><td class="num">${dinheiro(f.min)} ${lim !== null ? "a " + dinheiro(lim - 1) : "ou mais"}</td>
+        <td><div class="entrada" style="min-height:40px"><input aria-label="Comissão da faixa ${i + 1}" data-faixa="${i}" data-campo="pct" value="${String(f.pct).replace(".", ",")}"><span>%</span></div></td>
+        <td><div class="entrada" style="min-height:40px"><span>R$</span><input aria-label="Taxa fixa da faixa ${i + 1}" data-faixa="${i}" data-campo="fixa" value="${(f.fixa / 100).toFixed(2).replace(".", ",")}"></div></td></tr>`;
+    }).join("");
+    return `<div class="grade-2">
+      <div class="cartao">
+        <h2>Custos da sua loja</h2>
+        <div class="campos">
+          <label class="campo" for="cfg-embalagem">Embalagem por pedido<small>Caixa, saco, fita e etiqueta</small><div class="entrada"><span>R$</span><input id="cfg-embalagem" inputmode="decimal" value="${(c.embalagem / 100).toFixed(2).replace(".", ",")}"></div></label>
+          <label class="campo" for="cfg-imposto">Imposto sobre a venda<small>MEI: 0%. Simples Nacional (comércio): a partir de 4%</small><div class="entrada"><input id="cfg-imposto" inputmode="decimal" value="${String(c.aliquota).replace(".", ",")}"><span>%</span></div></label>
+        </div>
+        <label class="checar" for="cfg-cpf"><input type="checkbox" id="cfg-cpf" ${c.adicional ? "checked" : ""}>
+          <span>Vendo como pessoa física (CPF) e passei de 450 pedidos em 90 dias <span class="suave pequeno">(a Shopee cobra R$ 3,00 a mais por item)</span></span></label>
+        <details class="como tabela-taxas"><summary>Tabela de taxas da Shopee (março de 2026)</summary>
+          <p class="suave pequeno" style="margin:8px 0">Usada no simulador e quando a planilha vem sem as taxas. Se a Shopee mudar a tabela, ajuste aqui.</p>
+          <div class="tabela-envelope"><table><thead><tr><th>Preço do item</th><th>Comissão</th><th>Taxa fixa por item</th></tr></thead><tbody>${tabela}</tbody></table></div>
+          <div class="acoes" style="margin-top:10px"><button class="botao secundario pequeno" id="tabela-padrao">Voltar para a tabela de março de 2026</button></div>
+        </details>
+      </div>
+      <div class="cartao">
+        <h2>Guardar e levar seus custos</h2>
+        <p class="pequeno">Seus custos e pedidos ficam salvos <b>neste navegador</b>. Para usar em outro computador ou no celular, copie o código abaixo e cole lá.</p>
+        <div class="acoes"><button class="botao secundario pequeno" id="copiar-custos">Copiar meus custos</button></div>
+        <label class="campo" for="colar-custos">Colar custos de outro aparelho<textarea id="colar-custos" placeholder='Cole aqui o código copiado'></textarea></label>
+        <div class="acoes"><button class="botao secundario pequeno" id="restaurar-custos">Usar esses custos</button></div>
+        <div class="sep" style="border-top:1.5px dashed var(--linha)"></div>
+        <p class="pequeno">Apagar os pedidos importados (os custos continuam salvos):</p>
+        <div class="acoes" id="apagar-envelope"><button class="botao secundario pequeno" id="apagar-pedidos">Apagar pedidos</button></div>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- Importação da planilha ---------- */
+  function processarMatriz(matriz, nomeArquivo, mapaForcado) {
+    const h = mapaForcado ? mapaForcado.cabecalho : M.acharCabecalho(matriz);
+    if (h < 0 && !mapaForcado) return pedirMapeamento(matriz, nomeArquivo, 0, {});
+    const mapa = mapaForcado ? mapaForcado.mapa : M.detectarColunas(matriz[h]);
+    if (!mapaForcado && M.faltando(mapa).length) return pedirMapeamento(matriz, nomeArquivo, h, mapa);
+    const r = M.montarPedidos(matriz.slice(h + 1), mapa);
+    if (!r.pedidos.length) {
+      toast("Não encontrei pedidos nessa planilha. Confira se é a planilha de pedidos da Shopee.");
+      return;
+    }
+    const atuais = new Map((estado.pedidos || []).map((p) => [p.id, p]));
+    let novos = 0;
+    for (const p of r.pedidos) { if (!atuais.has(p.id)) novos++; atuais.set(p.id, p); }
+    estado.pedidos = [...atuais.values()];
+    estado.arquivo = { nome: nomeArquivo, quando: new Date().toISOString() };
+    const ok = gravar("pedidos", estado.pedidos);
+    gravar("arquivo", estado.arquivo);
+    salvarCustos();
+    estado.periodo = null;
+    $("#mapear").hidden = true;
+    let msg = `${r.pedidos.length} pedidos lidos, ${novos} novos.`;
+    if (r.erros.length) msg += ` ${r.erros.length} com problema ficaram de fora.`;
+    if (!ok) msg += " Não consegui salvar neste navegador: os dados somem ao fechar.";
+    toast(msg);
+    const semCusto = M.analisar(estado.pedidos, estado.custos, cfg()).produtos.some((p) => p.semCusto);
+    estado.aba = semCusto ? "produtos" : "resumo";
+    if (semCusto) estado.ordem = "falta";
+    render();
+  }
+
+  function pedirMapeamento(matriz, nomeArquivo, linhaCabecalho, mapaParcial) {
+    const cab = matriz[linhaCabecalho] || [];
+    const opcoes = (campo) => `<option value="">(não tem)</option>` + cab.map((c, i) => `<option value="${i}" ${mapaParcial[campo] === i ? "selected" : ""}>${esc(c || "Coluna " + (i + 1))}</option>`).join("");
+    const campos = Object.entries(M.COLUNAS).filter(([k]) => k !== "precoOriginal").map(([k, d]) =>
+      `<label class="campo" for="map-${k}">${esc(d.rotulo)}${d.obrigatoria ? "" : " <small>(opcional)</small>"}<select id="map-${k}" data-mapa="${k}">${opcoes(k)}</select></label>`).join("");
+    const painel = $("#mapear");
+    painel.hidden = false;
+    painel.innerHTML = `<h2>Me ajude a entender essa planilha</h2>
+      <p class="pequeno">Não reconheci algumas colunas. Diga qual coluna tem cada informação. Os campos sem "(opcional)" são necessários.</p>
+      <div class="campos">${campos}</div>
+      <div class="acoes"><button class="botao" id="mapa-ok">Continuar</button><button class="botao secundario" id="mapa-cancelar">Cancelar</button></div>`;
+    painel.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("#mapa-ok").onclick = () => {
+      const mapa = {};
+      painel.querySelectorAll("[data-mapa]").forEach((s) => { if (s.value !== "") mapa[s.dataset.mapa] = Number(s.value); });
+      const falta = M.faltando(mapa);
+      if (falta.length) { toast("Falta escolher: " + falta.map((f) => M.COLUNAS[f].rotulo).join(", ")); return; }
+      processarMatriz(matriz, nomeArquivo, { cabecalho: linhaCabecalho, mapa });
+    };
+    $("#mapa-cancelar").onclick = () => { painel.hidden = true; };
+  }
+
+  function lerArquivo(arquivo) {
+    if (!arquivo) return;
+    if (typeof XLSX === "undefined") { toast("O leitor de planilhas não carregou. Confira a internet e recarregue a página."); return; }
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      try {
+        const wb = XLSX.read(new Uint8Array(leitor.result), { type: "array", cellDates: true });
+        let escolhida = null;
+        for (const nome of wb.SheetNames) {
+          const m = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, raw: true, defval: "" });
+          if (M.acharCabecalho(m) >= 0) { escolhida = m; break; }
+          if (!escolhida) escolhida = m;
+        }
+        processarMatriz(escolhida || [], arquivo.name);
+      } catch (e) {
+        toast("Não consegui abrir esse arquivo. Envie a planilha .xlsx exportada da Shopee, sem alterações.");
+      }
+    };
+    leitor.onerror = () => toast("Não consegui ler o arquivo.");
+    leitor.readAsArrayBuffer(arquivo);
+  }
+
+  /* ---------- Render e eventos ---------- */
+  function render() {
+    montarAviso();
+    montarPeriodo();
+    document.querySelectorAll(".aba").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.aba === estado.aba)));
+    const telas = { resumo: telaResumo, produtos: telaProdutos, pedidos: telaPedidos, simulador: telaSimulador, ajustes: telaAjustes };
+    $("#conteudo").innerHTML = telas[estado.aba]();
+    if (estado.aba === "produtos") $("#ordem").value = estado.ordem;
+    if (estado.aba === "simulador") atualizarSimulador();
+    try { localStorage.setItem(`${CHAVE}.aba`, estado.aba); } catch { /* sem armazenamento */ }
+  }
+
+  $("#abas").addEventListener("click", (e) => {
+    const b = e.target.closest(".aba");
+    if (!b) return;
+    estado.aba = b.dataset.aba;
+    render();
+  });
+  $("#periodo").addEventListener("change", (e) => { estado.periodo = e.target.value; estado.limitePedidos = 60; render(); });
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-enviar]")) $("#arquivo").click(); });
+  $("#arquivo").addEventListener("change", (e) => { lerArquivo(e.target.files[0]); e.target.value = ""; });
+
+  ["dragenter", "dragover"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); $("#app").classList.add("soltar"); }));
+  ["dragleave", "drop"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); if (t === "drop" || e.target === document.documentElement) $("#app").classList.remove("soltar"); }));
+  document.addEventListener("drop", (e) => { $("#app").classList.remove("soltar"); lerArquivo(e.dataTransfer?.files?.[0]); });
+
+  const conteudo = $("#conteudo");
+  conteudo.addEventListener("click", async (e) => {
+    const ir = e.target.closest("[data-ir]");
+    if (ir) { estado.aba = ir.dataset.ir; if (estado.aba === "produtos") estado.ordem = "falta"; render(); return; }
+    const sim = e.target.closest("[data-simular]");
+    if (sim) {
+      const r = M.analisar(pedidosDoPeriodo(), custosAtuais(), cfg());
+      const p = r.produtos.find((x) => x.sku === sim.dataset.simular);
+      const custo = custosAtuais()[sim.dataset.simular];
+      estado.pendente = { custo: ((custo || 0) / 100).toFixed(2).replace(".", ","), preco: ((p?.precoMedio || 0) / 100).toFixed(2).replace(".", ",") };
+      estado.aba = "simulador";
+      render();
+      return;
+    }
+    const f = e.target.closest("[data-filtro]");
+    if (f) { estado.filtroPedidos = f.dataset.filtro; estado.limitePedidos = 60; render(); return; }
+    if (e.target.id === "mais-pedidos") { estado.limitePedidos += 100; render(); return; }
+    if (e.target.id === "copiar-custos") {
+      const codigo = JSON.stringify({ margem: 1, custos: estado.custos, embalagem: estado.config.embalagem, aliquota: estado.config.aliquota, adicional: estado.config.adicional });
+      try { await navigator.clipboard.writeText(codigo); toast("Código copiado. Cole no outro aparelho, em Ajustes."); }
+      catch { const t = $("#colar-custos"); t.value = codigo; t.select(); toast("Selecionei o código: copie com Ctrl+C."); }
+      return;
+    }
+    if (e.target.id === "restaurar-custos") {
+      try {
+        const d = JSON.parse($("#colar-custos").value);
+        if (!d || typeof d.custos !== "object") throw new Error();
+        estado.custos = { ...estado.custos, ...d.custos };
+        if (Number.isFinite(d.embalagem)) estado.config.embalagem = d.embalagem;
+        if (Number.isFinite(d.aliquota)) estado.config.aliquota = d.aliquota;
+        if (Number.isFinite(d.adicional)) estado.config.adicional = d.adicional;
+        gravar("custos", estado.custos); salvarConfig();
+        toast(`${Object.keys(d.custos).length} custos recuperados.`);
+        render();
+      } catch { toast("Esse código não parece certo. Copie de novo no outro aparelho."); }
+      return;
+    }
+    if (e.target.id === "apagar-pedidos") {
+      $("#apagar-envelope").innerHTML = `<span class="pequeno">Tem certeza? Os pedidos somem deste navegador.</span>
+        <button class="botao perigo pequeno" id="apagar-sim">Sim, apagar</button><button class="botao secundario pequeno" id="apagar-nao">Não</button>`;
+      return;
+    }
+    if (e.target.id === "apagar-sim") {
+      estado.pedidos = null; estado.arquivo = null;
+      gravar("pedidos", null); gravar("arquivo", null);
+      toast("Pedidos apagados. Seus custos continuam salvos.");
+      estado.aba = "resumo"; render(); return;
+    }
+    if (e.target.id === "apagar-nao") { render(); return; }
+    if (e.target.id === "tabela-padrao") { estado.config.tabela = M.TABELA_2026; salvarConfig(); toast("Tabela de março de 2026 restaurada."); render(); }
+  });
+
+  let espera;
+  conteudo.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.dataset.custo !== undefined) {
+      const alvo = exemplo() ? EXEMPLO_CUSTOS : estado.custos;
+      const sku = t.dataset.custo;
+      if (t.value.trim() === "") delete alvo[sku];
+      else { const c = lerCentavos(t.value); if (c === null || c < 0) return; alvo[sku] = c; }
+      clearTimeout(espera);
+      espera = setTimeout(() => { salvarCustos(); atualizarLinhasProdutos(); }, 250);
+      return;
+    }
+    if (t.id && t.id.startsWith("sim-")) { atualizarSimulador(); return; }
+    if (t.id === "cfg-embalagem") { const c = lerCentavos(t.value); if (c !== null && c >= 0) { estado.config.embalagem = c; salvarConfig(); } return; }
+    if (t.id === "cfg-imposto") { const v = Number(t.value.replace(",", ".")); if (Number.isFinite(v) && v >= 0 && v < 100) { estado.config.aliquota = v; salvarConfig(); } return; }
+    if (t.dataset.faixa !== undefined) {
+      const i = Number(t.dataset.faixa);
+      const tabela = estado.config.tabela.map((f) => ({ ...f }));
+      if (t.dataset.campo === "pct") { const v = Number(t.value.replace(",", ".")); if (!Number.isFinite(v) || v < 0 || v >= 100) return; tabela[i].pct = v; }
+      else { const c = lerCentavos(t.value); if (c === null || c < 0) return; tabela[i].fixa = c; }
+      estado.config.tabela = tabela; salvarConfig();
+    }
+  });
+  conteudo.addEventListener("change", (e) => {
+    if (e.target.id === "ordem") { estado.ordem = e.target.value; render(); }
+    if (e.target.id === "cfg-cpf") { estado.config.adicional = e.target.checked ? 300 : 0; salvarConfig(); toast(e.target.checked ? "Taxa extra de R$ 3,00 por item incluída." : "Taxa extra removida."); }
+  });
+
+  try { const aba = localStorage.getItem(`${CHAVE}.aba`); if (aba && ["resumo", "produtos", "pedidos", "simulador", "ajustes"].includes(aba)) estado.aba = aba; } catch { /* sem armazenamento */ }
+  render();
+})();
+</script>
+
+</body>
+</html>

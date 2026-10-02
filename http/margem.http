@@ -1,0 +1,75 @@
+### Requisições prontas para a extensão REST Client do VS Code (ou o cliente HTTP do IntelliJ).
+### Suba a aplicação com: docker compose up --build
+
+@base = http://localhost:8080
+
+### 1. Login como dono (demo)
+# @name login
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{ "usuario": "dono", "senha": "dono123" }
+
+###
+@token = {{login.response.body.token}}
+
+### 2. Resumo dos últimos 30 dias: faturamento, taxas, custos, lucro e para onde foi o dinheiro
+GET {{base}}/api/relatorios/resumo
+Authorization: Bearer {{token}}
+
+### 3. Lucro por produto (o mais vendido nem sempre é o que mais dá lucro)
+GET {{base}}/api/relatorios/produtos?ordenarPor=LUCRO
+Authorization: Bearer {{token}}
+
+### 4. Produtos vendidos no prejuízo
+GET {{base}}/api/relatorios/prejuizo
+Authorization: Bearer {{token}}
+
+### 5. Fila de expedição
+GET {{base}}/api/pedidos/a-enviar
+Authorization: Bearer {{token}}
+
+### 6. Importar a planilha exportada da Central do Vendedor
+POST {{base}}/api/pedidos/importacoes
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=limite
+
+--limite
+Content-Disposition: form-data; name="arquivo"; filename="pedidos-shopee-exemplo.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< ../exemplos/pedidos-shopee-exemplo.xlsx
+--limite--
+
+### 7. Cadastrar o produto que veio na planilha sem cadastro (preenche o custo das vendas antigas)
+POST {{base}}/api/produtos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "CAPA-NOTEBOOK-15", "nome": "Capa para Notebook 15,6 polegadas", "custoUnitario": 28.50, "estoqueInicial": 12, "estoqueMinimo": 3 }
+
+### 8. Vendendo a R$ 84,90, quanto sobra?
+POST {{base}}/api/simulador/lucro
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "precoVenda": 84.90, "custoProduto": 31.50 }
+
+### 9. Por quanto vender para ter 20% de margem?
+POST {{base}}/api/simulador/preco-ideal
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "custoProduto": 22.40, "margemDesejada": 20 }
+
+### 10. Faixas de preço em que cobrar mais dá menos lucro
+GET {{base}}/api/simulador/faixas-a-evitar
+Authorization: Bearer {{token}}
+
+### 11. Verificar alertas agora (sem Telegram configurado, aparecem no log)
+POST {{base}}/api/alertas/verificacoes
+Authorization: Bearer {{token}}
+
+### 12. Sincronizar com a Shopee (simulada na demo)
+POST {{base}}/api/pedidos/sincronizacoes?dias=7
+Authorization: Bearer {{token}}

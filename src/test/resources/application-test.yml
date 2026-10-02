@@ -1,0 +1,27 @@
+# Testes de integração: H2 em modo PostgreSQL por padrão.
+# No CI os mesmos testes rodam também contra um PostgreSQL de verdade (variáveis MARGEM_TESTE_DB_*).
+spring:
+  datasource:
+    url: ${MARGEM_TESTE_DB_URL:jdbc:h2:mem:margem;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1}
+    username: ${MARGEM_TESTE_DB_USUARIO:sa}
+    password: ${MARGEM_TESTE_DB_SENHA:}
+
+margem:
+  alertas:
+    habilitado: false
+  shopee:
+    modo: simulada
+    sincronizacao:
+      habilitada: false
+  telegram:
+    bot-token: ""
+    chat-id: ""
+  seguranca:
+    jwt-segredo: segredo-dos-testes-com-mais-de-32-caracteres
+    senha-inicial-dono: dono-teste
+    senha-inicial-expedicao: expedicao-teste
+
+logging:
+  level:
+    root: WARN
+    io.github.thibrown1.margem: INFO

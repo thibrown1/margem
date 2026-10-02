@@ -1,0 +1,21 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Segredos e dados reais da loja nunca vão para o Git
+.env
+*.local.yml
+dados/
+planilhas-reais/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+bin/
+
+.DS_Store
+Thumbs.db

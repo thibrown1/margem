@@ -1,0 +1,119 @@
+spring:
+  application:
+    name: margem
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/margem}
+    username: ${DB_USUARIO:margem}
+    password: ${DB_SENHA:margem}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  http:
+    client:
+      connect-timeout: 5s
+      read-timeout: 30s
+  web:
+    locale: pt_BR
+    locale-resolver: fixed
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+
+margem:
+  fuso-horario: America/Sao_Paulo
+
+  # Custos da loja que não vêm da Shopee
+  loja:
+    custo-embalagem-por-pedido: ${MARGEM_CUSTO_EMBALAGEM:1.50}
+    # Percentual de imposto sobre a venda. Simples Nacional (comércio) começa em 4%; MEI paga valor fixo, use 0.
+    aliquota-imposto: ${MARGEM_ALIQUOTA_IMPOSTO:4.00}
+
+  # Tabela de comissões da Shopee Brasil por faixa de preço do item.
+  # Valores divulgados para vendedores a partir de 01/03/2026. Confira na Central do Vendedor antes de usar:
+  # quando a Shopee mudar a tabela, é só atualizar aqui, sem mexer no código.
+  tabela-taxas:
+    vigencia: "2026-03-01"
+    # Vendedor CPF com mais de 450 pedidos em 90 dias paga R$ 3,00 a mais por item
+    taxa-adicional-por-item: ${MARGEM_TAXA_ADICIONAL_ITEM:0.00}
+    faixas:
+      - preco-minimo: 0.00
+        comissao-percentual: 50
+        taxa-fixa: 0.00
+      - preco-minimo: 8.00
+        comissao-percentual: 20
+        taxa-fixa: 4.00
+      - preco-minimo: 80.00
+        comissao-percentual: 14
+        taxa-fixa: 16.00
+      - preco-minimo: 100.00
+        comissao-percentual: 14
+        taxa-fixa: 20.00
+      - preco-minimo: 200.00
+        comissao-percentual: 14
+        taxa-fixa: 26.00
+
+  alertas:
+    habilitado: ${MARGEM_ALERTAS_HABILITADOS:false}
+    cron: "0 0 8-20 * * *"
+    horas-antes-do-prazo: 24
+    reenviar-apos-horas: 24
+    dias-verificar-prejuizo: 7
+
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}
+    url-base: https://api.telegram.org
+
+  shopee:
+    # simulada: pedidos de demonstração, sem credenciais | api: Shopee Open Platform v2
+    modo: ${SHOPEE_MODO:simulada}
+    sincronizacao:
+      habilitada: ${SHOPEE_SINCRONIZACAO_HABILITADA:false}
+      cron: "0 */30 * * * *"
+      dias: 3
+    api:
+      host: ${SHOPEE_HOST:https://partner.shopeemobile.com}
+      partner-id: ${SHOPEE_PARTNER_ID:}
+      partner-key: ${SHOPEE_PARTNER_KEY:}
+      shop-id: ${SHOPEE_SHOP_ID:}
+      access-token: ${SHOPEE_ACCESS_TOKEN:}
+      refresh-token: ${SHOPEE_REFRESH_TOKEN:}
+
+  seguranca:
+    # Pelo menos 32 caracteres. Sem valor, uma chave temporária é gerada a cada inicialização.
+    jwt-segredo: ${MARGEM_JWT_SEGREDO:}
+    jwt-validade-minutos: 480
+    # Usadas só na primeira execução, para criar os usuários. Sem valor, uma senha aleatória aparece no log.
+    senha-inicial-dono: ${MARGEM_SENHA_DONO:}
+    senha-inicial-expedicao: ${MARGEM_SENHA_EXPEDICAO:}

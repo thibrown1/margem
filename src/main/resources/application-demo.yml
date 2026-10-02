@@ -1,0 +1,11 @@
+# Perfil de demonstração: produtos de exemplo, 45 dias de pedidos da Shopee simulada e senhas conhecidas.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+
+margem:
+  shopee:
+    modo: simulada
+  seguranca:
+    senha-inicial-dono: ${MARGEM_SENHA_DONO:dono123}
+    senha-inicial-expedicao: ${MARGEM_SENHA_EXPEDICAO:expedicao123}
