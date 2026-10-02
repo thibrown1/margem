@@ -20,7 +20,7 @@ jobs:
         run: mvn -B verify
       - name: Relatório de cobertura (JaCoCo)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cobertura-de-testes
           path: target/site/jacoco
